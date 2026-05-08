@@ -1,3 +1,5 @@
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated
@@ -9,6 +11,7 @@ from projects.models import Project, ProjectMember
 from .models import Message, Attachment
 from .serializers import MessageSerializer
 
+@csrf_exempt
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser])
@@ -52,6 +55,7 @@ def project_messages(request, project_id):
 
         return Response({'success': True, 'data': MessageSerializer(message).data}, status=201)
 
+@csrf_exempt
 @api_view(['PATCH', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def edit_message(request, pk):

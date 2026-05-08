@@ -29,12 +29,18 @@ export function AuthProvider({ children }) {
   const checkAuth = useCallback(async () => {
     try {
       const res = await authAPI.getProfile();
-      setUser(res.data.data);
-    } catch {
-      // Try refresh
+      if (res.data.success) {
+        setUser(res.data.data);
+      }
+    } catch (err) {
+      // If we are on login/signup, don't try to refresh to avoid loops
+      if (['/login', '/signup'].includes(window.location.pathname)) return;
+
       try {
         const res = await authAPI.refresh();
-        setUser(res.data.data);
+        if (res.data.success) {
+          setUser(res.data.data);
+        }
       } catch {
         setUser(null);
       }

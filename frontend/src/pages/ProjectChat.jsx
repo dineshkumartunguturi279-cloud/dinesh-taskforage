@@ -65,7 +65,8 @@ export default function ProjectChat({ overrideId }) {
       setFiles([]);
       loadMessages();
     } catch (err) {
-      toast.error('Failed to send message.');
+      const errorMsg = err.response?.data?.error?.message || err.response?.data?.detail || 'Failed to send message.';
+      toast.error(errorMsg);
     } finally {
       setSending(false);
     }

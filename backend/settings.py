@@ -134,8 +134,20 @@ SIMPLE_JWT = {
 
 # ─── CORS Configuration ───
 CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://localhost:5174,http://localhost:5175').split(',')
-CORS_ALLOW_ALL_ORIGINS = DEBUG  # Allow all in debug mode, use specific list otherwise
+CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOW_CREDENTIALS = True
+CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
 # ─── CSRF Trusted Origins (required for Railway) ───
 CSRF_TRUSTED_ORIGINS = list(CORS_ALLOWED_ORIGINS)
