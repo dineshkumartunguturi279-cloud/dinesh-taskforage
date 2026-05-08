@@ -1,6 +1,0 @@
-[build]
-# Build is handled by nixpacks.toml
-
-[deploy]
-# Start command to serve the static dist folder
-startCommand = "npx -y serve dist -s -l $PORT"
