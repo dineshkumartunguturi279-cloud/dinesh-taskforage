@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Message, Attachment
-from accounts.serializers import UserMinimalSerializer
+from accounts.serializers import UserSerializer
 
 class AttachmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,7 +8,7 @@ class AttachmentSerializer(serializers.ModelSerializer):
         fields = ['id', 'file', 'file_name', 'file_type', 'file_size']
 
 class MessageSerializer(serializers.ModelSerializer):
-    sender = UserMinimalSerializer(read_only=True)
+    sender = UserSerializer(read_only=True)
     attachments = AttachmentSerializer(many=True, read_only=True)
     
     class Meta:
