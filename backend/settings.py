@@ -3,6 +3,7 @@ Django settings for Team Task Manager.
 Production-ready with Railway deployment support.
 """
 
+# Backend settings for Team Task Manager
 import os
 from pathlib import Path
 from datetime import timedelta
@@ -42,12 +43,13 @@ INSTALLED_APPS = [
     'accounts',
     'projects',
     'tasks',
+    'chat',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -131,16 +133,8 @@ SIMPLE_JWT = {
 }
 
 # ─── CORS Configuration ───
-CORS_ALLOWED_ORIGINS = os.environ.get(
-    'CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173'
-).split(',')
-# Remove empty strings
-CORS_ALLOWED_ORIGINS = [o.strip() for o in CORS_ALLOWED_ORIGINS if o.strip()]
-
-# Allow all *.railway.app subdomains in production
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^https://.*\.railway\.app$",
-]
+CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://localhost:5174,http://localhost:5175').split(',')
+CORS_ALLOW_ALL_ORIGINS = DEBUG  # Allow all in debug mode, use specific list otherwise
 CORS_ALLOW_CREDENTIALS = True
 
 # ─── CSRF Trusted Origins (required for Railway) ───
@@ -148,11 +142,21 @@ CSRF_TRUSTED_ORIGINS = list(CORS_ALLOWED_ORIGINS)
 if RAILWAY_DOMAIN:
     CSRF_TRUSTED_ORIGINS.append(f'https://{RAILWAY_DOMAIN}')
 
-FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5175')
 
 # ─── Cookie settings ───
 CSRF_COOKIE_HTTPONLY = True
 SESSION_COOKIE_HTTPONLY = True
+
+# ─── Media settings ───
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600 # 100MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600 # 100MB
+
+# ─── Email settings ───
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # For local testing
+DEFAULT_FROM_EMAIL = 'notifications@taskflow.com'
 
 # ─── Production security settings ───
 if not DEBUG:

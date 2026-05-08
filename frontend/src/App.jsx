@@ -12,6 +12,8 @@ import Projects from './pages/Projects';
 import ProjectDetail from './pages/ProjectDetail';
 import MembersManagement from './pages/MembersManagement';
 import TasksPage from './pages/TasksPage';
+import ProjectChat from './pages/ProjectChat';
+import ChatDashboard from './pages/ChatDashboard';
 import MyTasks from './pages/MyTasks';
 import Settings from './pages/Settings';
 
@@ -49,6 +51,8 @@ function AppRoutes() {
         <Route path="projects/:id" element={<ProjectDetail />} />
         <Route path="projects/:id/members" element={<MembersManagement />} />
         <Route path="projects/:id/tasks" element={<TasksPage />} />
+        <Route path="projects/:id/chat" element={<ProjectChat />} />
+        <Route path="chat" element={<ChatDashboard />} />
         <Route path="my-tasks" element={<MyTasks />} />
         <Route path="settings" element={<Settings />} />
       </Route>

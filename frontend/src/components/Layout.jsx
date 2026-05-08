@@ -6,13 +6,14 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, FolderKanban, CheckSquare, Settings, LogOut,
-  Menu, X, ChevronRight
+  Menu, X, MessageSquare
 } from 'lucide-react';
 
 const navItems = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/projects', icon: FolderKanban, label: 'Projects' },
   { path: '/my-tasks', icon: CheckSquare, label: 'My Tasks' },
+  { path: '/chat', icon: MessageSquare, label: 'Chat' },
   { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 

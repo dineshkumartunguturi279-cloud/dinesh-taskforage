@@ -162,7 +162,8 @@ export default function TasksPage() {
                 <tr key={t.id}>
                   <td>
                     <div style={{ fontWeight: 500, color: 'var(--color-text)' }}>{t.title}</div>
-                    {t.is_overdue && <span style={{ fontSize: '0.6875rem', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><AlertTriangle size={12} /> Overdue</span>}
+                    {t.description && <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.125rem' }}>{t.description}</div>}
+                    {t.is_overdue && <span style={{ fontSize: '0.6875rem', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.25rem' }}><AlertTriangle size={12} /> Overdue</span>}
                   </td>
                   <td className="hide-mobile"><span className={`badge badge-${t.priority.toLowerCase()}`}>{t.priority}</span></td>
                   <td>
@@ -257,14 +258,30 @@ export default function TasksPage() {
               <div style={{ marginBottom: '1.5rem' }}>
                 <label className="label">Assign To</label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', maxHeight: '8rem', overflowY: 'auto' }}>
-                  {members.map(m => (
-                    <button key={m.user.id} type="button" onClick={() => toggleAssignee(m.user.id)} style={{
-                      padding: '0.375rem 0.75rem', borderRadius: 'var(--radius-md)', fontSize: '0.8125rem', cursor: 'pointer',
-                      border: form.assigned_to.includes(m.user.id) ? '1px solid var(--color-primary)' : '1px solid var(--color-border)',
-                      background: form.assigned_to.includes(m.user.id) ? 'var(--color-primary-subtle)' : 'var(--color-bg)',
-                      color: form.assigned_to.includes(m.user.id) ? 'var(--color-primary-light)' : 'var(--color-text-secondary)',
-                    }}>{m.user.name}</button>
-                  ))}
+                  {members.map(m => {
+                    // Support both ProjectMember and User objects just in case
+                    const userObj = m.user || m;
+                    const isBusy = (userObj.active_task_count || 0) > 0;
+                    const isSelected = form.assigned_to.includes(userObj.id);
+                    const displayName = userObj.name || userObj.email || 'Unknown User';
+                    
+                    return (
+                      <button key={userObj.id} type="button" onClick={() => toggleAssignee(userObj.id)} style={{
+                        padding: '0.375rem 0.75rem', borderRadius: 'var(--radius-md)', fontSize: '0.8125rem', cursor: 'pointer',
+                        border: isSelected ? '1px solid var(--color-primary)' : '1px solid var(--color-border)',
+                        background: isSelected ? 'var(--color-primary-subtle)' : 'var(--color-bg)',
+                        color: isSelected ? 'var(--color-primary-light)' : 'var(--color-text-secondary)',
+                        display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.125rem'
+                      }}>
+                        <span style={{fontWeight:isSelected?600:400}}>{displayName}</span>
+                        {isBusy && (
+                          <span style={{fontSize:'0.625rem', color:'#fbbf24', display:'flex', alignItems:'center', gap:'0.125rem'}}>
+                            <AlertTriangle size={10}/> {userObj.active_task_count} active tasks
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>

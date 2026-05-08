@@ -64,12 +64,23 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserMinimalSerializer(serializers.ModelSerializer):
-    """Minimal user serializer for embedding in other responses."""
+    """Minimal user serializer with project and task counts."""
+    project_count = serializers.SerializerMethodField()
+    active_task_count = serializers.SerializerMethodField()
     
     class Meta:
         model = User
-        fields = ['id', 'name', 'email']
-        read_only_fields = ['id', 'name', 'email']
+        fields = ['id', 'name', 'email', 'project_count', 'active_task_count']
+        read_only_fields = ['id', 'name', 'email', 'project_count', 'active_task_count']
+
+    def get_project_count(self, obj):
+        return obj.project_memberships.count()
+
+    def get_active_task_count(self, obj):
+        # Count tasks that are not 'DONE'
+        return obj.task_assignments.filter(
+            task__status__in=['TODO', 'IN_PROGRESS']
+        ).count()
 
 
 class ChangePasswordSerializer(serializers.Serializer):

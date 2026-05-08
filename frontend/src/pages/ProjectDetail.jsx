@@ -6,7 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { projectsAPI } from '../api/client';
 import {
   FolderKanban, Users, CheckSquare, Settings, ArrowLeft,
-  Edit3, Trash2, X, Save
+  Edit3, Trash2, X, Save, MessageSquare
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -198,6 +198,20 @@ export default function ProjectDetail() {
           <Users size={24} style={{ color: '#6366f1', margin: '0 auto 0.75rem' }} />
           <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, marginBottom: '0.25rem' }}>Manage Members</h3>
           <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Add, remove, and manage roles</p>
+        </button>
+
+        <button
+          onClick={() => navigate(`/projects/${id}/chat`)}
+          className="card"
+          style={{
+            padding: '1.5rem', textAlign: 'center', cursor: 'pointer',
+            border: '1px solid var(--color-border)', background: 'var(--color-bg-card)',
+            color: 'var(--color-text)', width: '100%'
+          }}
+        >
+          <MessageSquare size={24} style={{ color: '#f59e0b', margin: '0 auto 0.75rem' }} />
+          <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, marginBottom: '0.25rem' }}>Project Chat</h3>
+          <p style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Real-time team communication</p>
         </button>
       </div>
 

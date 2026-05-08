@@ -3,7 +3,7 @@
  */
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,
@@ -75,8 +75,18 @@ export const authAPI = {
   logout: () => api.post('/auth/logout/'),
   refresh: () => api.post('/auth/refresh/'),
   getProfile: () => api.get('/auth/profile/'),
+  getUsers: (search) => api.get('/auth/users/', { params: { search } }),
   updateProfile: (data) => api.patch('/auth/profile/', data),
   changePassword: (data) => api.post('/auth/change-password/', data),
+};
+
+export const chatAPI = {
+  projectMessages: (projectId) => api.get(`/chat/project/${projectId}/`),
+  sendMessage: (projectId, data) => api.post(`/chat/project/${projectId}/`, data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  editMessage: (id, data) => api.patch(`/chat/message/${id}/`, data),
+  deleteMessage: (id) => api.delete(`/chat/message/${id}/`),
 };
 
 // ─── Projects API ───

@@ -49,7 +49,7 @@ class TaskListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = [
-            'id', 'title', 'due_date', 'priority', 'status',
+            'id', 'title', 'description', 'due_date', 'priority', 'status',
             'project', 'project_name', 'created_by',
             'assignee_count', 'assignees', 'is_overdue',
             'created_at', 'updated_at'
@@ -77,7 +77,7 @@ class TaskCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = ['id', 'title', 'description', 'due_date', 'priority', 'status', 'project', 'assigned_to']
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'project']
 
     def validate_title(self, value):
         if not value.strip():

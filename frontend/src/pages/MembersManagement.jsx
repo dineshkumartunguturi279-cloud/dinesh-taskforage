@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { projectsAPI } from '../api/client';
+import { projectsAPI, authAPI } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { Users, ArrowLeft, Plus, Shield, ShieldOff, UserMinus, Crown, X, Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -15,8 +15,16 @@ export default function MembersManagement() {
   const [showAdd, setShowAdd] = useState(false);
   const [addForm, setAddForm] = useState({ email: '', role: 'MEMBER' });
   const [adding, setAdding] = useState(false);
+  const [allUsers, setAllUsers] = useState([]);
+  const [userSearch, setUserSearch] = useState('');
 
   useEffect(() => { loadData(); }, [id]);
+
+  useEffect(() => {
+    if (showAdd) {
+      fetchUsers();
+    }
+  }, [showAdd, userSearch]);
 
   const loadData = async () => {
     try {
@@ -27,14 +35,19 @@ export default function MembersManagement() {
     finally { setLoading(false); }
   };
 
+  const fetchUsers = async () => {
+    try {
+      const res = await authAPI.getUsers(userSearch);
+      setAllUsers(res.data.data);
+    } catch { toast.error('Failed to load users.'); }
+  };
+
   const isAdmin = project?.my_role === 'ADMIN';
 
-  const handleAdd = async (e) => {
-    e.preventDefault();
-    if (!addForm.email.trim()) { toast.error('Email required.'); return; }
+  const handleAdd = async (email) => {
     setAdding(true);
     try {
-      await projectsAPI.addMember(id, addForm);
+      await projectsAPI.addMember(id, { email, role: addForm.role });
       toast.success('Member added!'); setShowAdd(false); setAddForm({ email: '', role: 'MEMBER' }); loadData();
     } catch (err) { toast.error(err.response?.data?.error?.message || 'Failed.'); }
     finally { setAdding(false); }
@@ -113,23 +126,60 @@ export default function MembersManagement() {
               <h2 style={{fontSize:'1.125rem',fontWeight:600}}>Add Member</h2>
               <button onClick={()=>setShowAdd(false)} style={{background:'none',border:'none',color:'var(--color-text-muted)',cursor:'pointer'}}><X size={20}/></button>
             </div>
-            <form onSubmit={handleAdd} style={{padding:'1.5rem'}}>
+            <div style={{padding:'1.5rem'}}>
               <div style={{marginBottom:'1.25rem'}}>
-                <label className="label">Email *</label>
-                <input type="email" className="input" placeholder="user@example.com" value={addForm.email} onChange={e=>setAddForm({...addForm,email:e.target.value})} autoFocus/>
+                <label className="label">Search Users</label>
+                <div style={{position:'relative'}}>
+                  <Mail size={16} style={{position:'absolute',left:'0.75rem',top:'50%',transform:'translateY(-50%)',color:'var(--color-text-muted)'}}/>
+                  <input type="text" className="input" style={{paddingLeft:'2.5rem'}} placeholder="Search by name or email..." value={userSearch} onChange={e=>setUserSearch(e.target.value)} autoFocus/>
+                </div>
               </div>
-              <div style={{marginBottom:'1.5rem'}}>
-                <label className="label">Role</label>
-                <select className="select" value={addForm.role} onChange={e=>setAddForm({...addForm,role:e.target.value})}>
-                  <option value="MEMBER">Member</option>
-                  <option value="ADMIN">Admin</option>
-                </select>
+              
+              <div style={{maxHeight:'15rem',overflowY:'auto',marginBottom:'1.5rem',display:'grid',gap:'0.5rem'}}>
+                {allUsers.length === 0 ? (
+                  <div style={{padding:'1.5rem',textAlign:'center',color:'var(--color-text-muted)',fontSize:'0.875rem'}}>No users found.</div>
+                ) : (
+                  allUsers.map(u => {
+                    const isAlreadyMember = members.some(m => m.user.id === u.id);
+                    const isBusy = u.project_count > 0 || u.active_task_count > 0;
+                    
+                    return (
+                      <div key={u.id} className="card" style={{padding:'0.75rem',display:'flex',justifyContent:'space-between',alignItems:'center',opacity:isAlreadyMember?0.5:1}}>
+                        <div style={{minWidth:0}}>
+                          <div style={{fontSize:'0.875rem',fontWeight:600,display:'flex',alignItems:'center',gap:'0.5rem'}}>
+                            {u.name}
+                            {isBusy && !isAlreadyMember && (
+                              <span style={{color:'#fbbf24',fontSize:'0.75rem',background:'rgba(251,191,36,0.1)',padding:'0.125rem 0.375rem',borderRadius:'1rem',fontWeight:500}}>
+                                Caution: Busy in {u.project_count} project(s)
+                              </span>
+                            )}
+                          </div>
+                          <div style={{fontSize:'0.75rem',color:'var(--color-text-muted)',overflow:'hidden',textOverflow:'ellipsis'}}>{u.email}</div>
+                        </div>
+                        {isAlreadyMember ? (
+                          <span style={{fontSize:'0.75rem',color:'var(--color-text-muted)'}}>In Project</span>
+                        ) : (
+                          <button onClick={()=>handleAdd(u.email)} className="btn-secondary btn-sm" disabled={adding}>
+                            {adding?<div className="spinner-sm"/>:'Add'}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
               </div>
-              <div style={{display:'flex',gap:'0.75rem',justifyContent:'flex-end'}}>
-                <button type="button" onClick={()=>setShowAdd(false)} className="btn-secondary">Cancel</button>
-                <button type="submit" className="btn-primary" disabled={adding}>{adding?<div className="spinner"/>:<><Plus size={16}/> Add</>}</button>
+
+              <div style={{paddingTop:'1.5rem',borderTop:'1px solid var(--color-border)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                <div style={{display:'flex',alignItems:'center',gap:'0.75rem'}}>
+                  <label className="label" style={{marginBottom:0}}>Assign as:</label>
+                  <select className="select" style={{width:'8rem',padding:'0.375rem 0.5rem'}} value={addForm.role} onChange={e=>setAddForm({...addForm,role:e.target.value})}>
+                    <option value="MEMBER">Member</option>
+                    <option value="ADMIN">Admin</option>
+                  </select>
+                </div>
+                <button type="button" onClick={()=>setShowAdd(false)} className="btn-secondary">Close</button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}

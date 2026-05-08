@@ -6,6 +6,8 @@ Members: view tasks, update ONLY status of assigned tasks.
 
 from django.db.models import Q, Count
 from django.utils import timezone
+from django.core.mail import send_mail
+from django.conf import settings
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -61,6 +63,10 @@ def task_list_create(request, project_id):
         tasks = Task.objects.filter(project=project).prefetch_related(
             'assignments__user', 'created_by'
         )
+        
+        # Members can only see their own tasks
+        if membership.role == ProjectMember.ROLE_MEMBER:
+            tasks = tasks.filter(assignments__user=request.user)
         
         # Filtering
         task_status = request.query_params.get('status')
@@ -183,6 +189,9 @@ def task_detail(request, project_id, pk):
             setattr(task, field, value)
         task.save()
 
+        if task.status == Task.STATUS_DONE:
+            _send_task_completion_email(task, request.user)
+
         if assigned_to_ids is not None:
             # Replace all assignments
             TaskAssignment.objects.filter(task=task).delete()
@@ -237,6 +246,9 @@ def task_status_update(request, project_id, pk):
 
     task.status = serializer.validated_data['status']
     task.save()
+
+    if task.status == Task.STATUS_DONE:
+        _send_task_completion_email(task, request.user)
 
     return Response({
         'success': True,
@@ -402,3 +414,42 @@ def _assign_users(task, user_ids, assigned_by, project):
                 user_id=user_id,
                 defaults={'assigned_by': assigned_by}
             )
+
+def _send_task_completion_email(task, completed_by):
+    """Send email notification to project admins when a task is completed."""
+    admins = ProjectMember.objects.filter(
+        project=task.project, 
+        role=ProjectMember.ROLE_ADMIN
+    ).select_related('user')
+    
+    admin_emails = [a.user.email for a in admins]
+    
+    if not admin_emails:
+        return
+
+    subject = f"Task Completed: {task.title}"
+    message = f"""
+Hello,
+
+The following task has been marked as DONE in project '{task.project.name}':
+
+Task: {task.title}
+Completed by: {completed_by.name} ({completed_by.email})
+Date: {timezone.now().strftime('%Y-%m-%d %H:%M')}
+
+You can view the project here: {settings.FRONTEND_URL}/projects/{task.project.id}
+
+Best regards,
+TaskFlow System
+    """
+    
+    try:
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            admin_emails,
+            fail_silently=True,
+        )
+    except Exception as e:
+        print(f"Failed to send email: {e}")
