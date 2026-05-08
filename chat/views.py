@@ -27,33 +27,39 @@ def project_messages(request, project_id):
         return Response({'success': False, 'error': {'message': 'Not a member.'}}, status=403)
 
     if request.method == 'GET':
-        messages = Message.objects.filter(project=project).prefetch_related('attachments', 'sender')
-        serializer = MessageSerializer(messages, many=True)
-        return Response({'success': True, 'data': serializer.data})
+        try:
+            messages = Message.objects.filter(project=project).prefetch_related('attachments', 'sender')
+            serializer = MessageSerializer(messages, many=True)
+            return Response({'success': True, 'data': serializer.data})
+        except Exception as e:
+            return Response({'success': False, 'error': {'message': f"Server Error: {str(e)}"}}, status=500)
 
     if request.method == 'POST':
-        content = request.data.get('content', '')
-        files = request.FILES.getlist('files')
-        
-        if not content and not files:
-            return Response({'success': False, 'error': {'message': 'Empty message.'}}, status=400)
-
-        message = Message.objects.create(
-            project=project,
-            sender=request.user,
-            content=content
-        )
-
-        for f in files:
-            Attachment.objects.create(
-                message=message,
-                file=f,
-                file_name=f.name,
-                file_type=f.content_type,
-                file_size=f.size
+        try:
+            content = request.data.get('content', '')
+            files = request.FILES.getlist('files')
+            
+            if not content and not files:
+                return Response({'success': False, 'error': {'message': 'Empty message.'}}, status=400)
+    
+            message = Message.objects.create(
+                project=project,
+                sender=request.user,
+                content=content
             )
-
-        return Response({'success': True, 'data': MessageSerializer(message).data}, status=201)
+    
+            for f in files:
+                Attachment.objects.create(
+                    message=message,
+                    file=f,
+                    file_name=f.name,
+                    file_type=f.content_type,
+                    file_size=f.size
+                )
+    
+            return Response({'success': True, 'data': MessageSerializer(message).data}, status=201)
+        except Exception as e:
+            return Response({'success': False, 'error': {'message': f"Server Error: {str(e)}"}}, status=500)
 
 @csrf_exempt
 @api_view(['PATCH', 'DELETE'])
