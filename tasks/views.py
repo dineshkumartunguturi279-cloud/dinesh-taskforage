@@ -353,6 +353,24 @@ def dashboard(request):
     for p, label in Task.PRIORITY_CHOICES:
         priority_counts[p] = all_tasks.filter(priority=p).count()
 
+    # Tasks per user — all members across user's projects
+    tasks_per_user = []
+    member_users = User.objects.filter(
+        project_memberships__project__in=user_projects
+    ).distinct()
+    for member in member_users[:20]:
+        assigned_count = TaskAssignment.objects.filter(
+            user=member,
+            task__project__in=user_projects
+        ).count()
+        if assigned_count > 0:
+            tasks_per_user.append({
+                'user_id': member.id,
+                'user_name': member.name,
+                'task_count': assigned_count,
+            })
+    tasks_per_user.sort(key=lambda x: x['task_count'], reverse=True)
+
     return Response({
         'success': True,
         'data': {
@@ -362,6 +380,7 @@ def dashboard(request):
             'status_counts': status_counts,
             'priority_counts': priority_counts,
             'tasks_per_project': tasks_per_project,
+            'tasks_per_user': tasks_per_user,
             'recent_tasks': recent_tasks,
             'my_stats': my_stats,
         }

@@ -210,30 +210,58 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Project Stats */}
-      {data?.tasks_per_project?.length > 0 && (
-        <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
-          <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, marginBottom: '1rem' }}>Tasks Per Project</h3>
-          <div style={{ display: 'grid', gap: '0.75rem' }}>
-            {data.tasks_per_project.map((p) => {
-              const total = p.total || 1;
-              return (
-                <div key={p.project_id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/projects/${p.project_id}`)}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.375rem' }}>
-                    <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{p.project_name}</span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{p.total} tasks</span>
+      {/* Project & User Stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(20rem, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        {/* Project Stats */}
+        {data?.tasks_per_project?.length > 0 && (
+          <div className="card" style={{ padding: '1.25rem' }}>
+            <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, marginBottom: '1rem' }}>Tasks Per Project</h3>
+            <div style={{ display: 'grid', gap: '0.75rem' }}>
+              {data.tasks_per_project.map((p) => {
+                const total = p.total || 1;
+                return (
+                  <div key={p.project_id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/projects/${p.project_id}`)}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.375rem' }}>
+                      <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{p.project_name}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{p.total} tasks</span>
+                    </div>
+                    <div style={{ height: '0.375rem', borderRadius: '9999px', background: 'var(--color-bg)', display: 'flex', overflow: 'hidden' }}>
+                      <div style={{ width: `${(p.done / total) * 100}%`, background: '#10b981' }} />
+                      <div style={{ width: `${(p.in_progress / total) * 100}%`, background: '#f59e0b' }} />
+                      <div style={{ width: `${(p.todo / total) * 100}%`, background: '#3b82f6' }} />
+                    </div>
                   </div>
-                  <div style={{ height: '0.375rem', borderRadius: '9999px', background: 'var(--color-bg)', display: 'flex', overflow: 'hidden' }}>
-                    <div style={{ width: `${(p.done / total) * 100}%`, background: '#10b981', transition: 'width 0.3s' }} />
-                    <div style={{ width: `${(p.in_progress / total) * 100}%`, background: '#f59e0b', transition: 'width 0.3s' }} />
-                    <div style={{ width: `${(p.todo / total) * 100}%`, background: '#3b82f6', transition: 'width 0.3s' }} />
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* User Stats (Strict Requirement) */}
+        {data?.tasks_per_user?.length > 0 && (
+          <div className="card" style={{ padding: '1.25rem' }}>
+            <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, marginBottom: '1rem' }}>Tasks Per User</h3>
+            <div style={{ display: 'grid', gap: '0.75rem' }}>
+              {data.tasks_per_user.map((u) => (
+                <div key={u.user_id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{
+                      width: '1.75rem', height: '1.75rem', borderRadius: '50%',
+                      background: 'var(--color-primary-subtle)', color: 'var(--color-primary)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '0.75rem', fontWeight: 600
+                    }}>
+                      {u.user_name.charAt(0).toUpperCase()}
+                    </div>
+                    <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{u.user_name}</span>
+                  </div>
+                  <span className="badge badge-low">{u.task_count} tasks</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Recent Tasks */}
       {data?.recent_tasks?.length > 0 && (
