@@ -1,10 +1,11 @@
-[build]
-# Railway build phase — install deps and collect static files
-buildCommand = "python -m pip install -r requirements.txt && python manage.py collectstatic --noinput"
+[phases.build]
+cmds = [
+    "python3 -m pip install -r requirements.txt",
+    "python3 manage.py collectstatic --noinput"
+]
 
-[deploy]
-# Start command — run migrations before starting the server
-startCommand = "python manage.py migrate --noinput && gunicorn backend.wsgi --bind 0.0.0.0:$PORT --workers 3 --timeout 120"
+[start]
+cmd = "python3 manage.py migrate --noinput && gunicorn backend.wsgi --bind 0.0.0.0:$PORT --workers 3 --timeout 120"
 
 # Health check
 healthcheckPath = "/api/"
