@@ -1,6 +1,6 @@
 [build]
 # Railway build phase — install deps and collect static files
-buildCommand = "pip install -r requirements.txt && python manage.py collectstatic --noinput"
+buildCommand = "python -m pip install -r requirements.txt && python manage.py collectstatic --noinput"
 
 [deploy]
 # Start command — run migrations before starting the server
