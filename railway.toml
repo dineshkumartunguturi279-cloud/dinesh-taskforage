@@ -1,13 +1,8 @@
-[phases.build]
-cmds = [
-    "python3 -m pip install -r requirements.txt",
-    "python3 manage.py collectstatic --noinput"
-]
+[build]
+builder = "nixpacks"
 
-[start]
-cmd = "python3 manage.py migrate --noinput && gunicorn backend.wsgi --bind 0.0.0.0:$PORT --workers 3 --timeout 120"
-
-# Health check
+[deploy]
+startCommand = "python3 manage.py migrate --noinput && python3 manage.py collectstatic --noinput && gunicorn backend.wsgi --bind 0.0.0.0:$PORT --workers 3 --timeout 120"
 healthcheckPath = "/api/"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
