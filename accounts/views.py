@@ -93,13 +93,13 @@ def login(request):
         user = User.objects.get(email=email)
     except User.DoesNotExist:
         return Response(
-            {'success': False, 'error': {'message': 'Invalid email or password.'}},
+            {'success': False, 'error': {'message': 'Email does not exist with us. Please signup.'}},
             status=status.HTTP_401_UNAUTHORIZED
         )
 
     if not user.check_password(password):
         return Response(
-            {'success': False, 'error': {'message': 'Invalid email or password.'}},
+            {'success': False, 'error': {'message': 'Incorrect password.'}},
             status=status.HTTP_401_UNAUTHORIZED
         )
 
